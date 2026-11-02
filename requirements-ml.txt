@@ -1,0 +1,24 @@
+# Optional heavyweight backends. Install with:  pip install -r requirements-ml.txt
+#
+# Each of these has a lightweight fallback inside the platform, so the core
+# (ingest -> retrieve -> answer -> evaluate -> monitor) runs with this file
+# empty. Installing it swaps in the "real" implementations.
+
+# Experiment tracking + model registry
+mlflow>=2.14
+
+# Dense embeddings + cross-encoder reranking (needs torch; no wheels for py3.14 yet)
+sentence-transformers>=3.0
+
+# Online/offline feature store
+feast>=0.39
+
+# Data quality + drift reporting (rich HTML reports; built-in PSI fallback exists)
+great-expectations>=0.18
+evidently>=0.5
+
+# LLM providers (the platform also ships a deterministic local provider)
+openai>=1.30
+
+# Postgres backend for request logs / MLflow
+psycopg[binary]>=3.1

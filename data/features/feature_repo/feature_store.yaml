@@ -1,0 +1,26 @@
+# Feast feature store definition for the RAG platform.
+#
+# The `doc_stats` feature view holds per-document statistics computed
+# offline from the request log (see ragllmops/features/materialize.py).
+#
+# Usage:
+#   feast apply -R data/features/feature_repo
+#   feast materialize -R data/features/feature_repo --to <materialization-date>
+#
+# Serving reads the same view through Redis, which is what the offline/online
+# parity check verifies.
+
+project: ragllmops
+registry: data/features/feature_repo/registry.db
+provider: local
+
+online_store:
+  type: sqlite
+  path: data/features/online_store.db
+  # Switch to Redis for anything beyond a laptop:
+  #   type: redis
+  #   path: localhost:6379
+
+entity_key_serialization_version: 3
+
+batch_engine: local

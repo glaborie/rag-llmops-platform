@@ -1,0 +1,64 @@
+{
+  "features": {
+    "api_reference": {
+      "retrieval_count": 6.0,
+      "avg_relevance": 0.814603,
+      "refusal_rate": 0.0,
+      "recency_hours": 0.0
+    },
+    "backup_dr": {
+      "retrieval_count": 6.0,
+      "avg_relevance": 0.542289,
+      "refusal_rate": 0.166667,
+      "recency_hours": 0.0
+    },
+    "billing": {
+      "retrieval_count": 9.0,
+      "avg_relevance": 0.64566,
+      "refusal_rate": 0.0,
+      "recency_hours": 0.0
+    },
+    "compute": {
+      "retrieval_count": 15.0,
+      "avg_relevance": 0.614525,
+      "refusal_rate": 0.0,
+      "recency_hours": 0.0
+    },
+    "data_ingestion": {
+      "retrieval_count": 11.0,
+      "avg_relevance": 0.607845,
+      "refusal_rate": 0.090909,
+      "recency_hours": 0.0
+    },
+    "identity": {
+      "retrieval_count": 15.0,
+      "avg_relevance": 0.707218,
+      "refusal_rate": 0.0,
+      "recency_hours": 0.0
+    },
+    "networking": {
+      "retrieval_count": 11.0,
+      "avg_relevance": 0.76545,
+      "refusal_rate": 0.0,
+      "recency_hours": 0.0
+    },
+    "observability": {
+      "retrieval_count": 7.0,
+      "avg_relevance": 0.760132,
+      "refusal_rate": 0.0,
+      "recency_hours": 0.0
+    },
+    "storage": {
+      "retrieval_count": 10.0,
+      "avg_relevance": 0.75376,
+      "refusal_rate": 0.0,
+      "recency_hours": 0.0
+    },
+    "troubleshooting": {
+      "retrieval_count": 15.0,
+      "avg_relevance": 0.526777,
+      "refusal_rate": 0.133333,
+      "recency_hours": 0.0
+    }
+  }
+}

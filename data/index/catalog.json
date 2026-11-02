@@ -1,0 +1,524 @@
+{
+  "chunks": [
+    {
+      "chunk_id": "compute::0",
+      "doc_id": "compute",
+      "title": "Compute Instances",
+      "category": "compute",
+      "text": "## Instance families and sizing\nNorthwind Compute Instances are grouped into four families. `nw-standard` is the general-purpose family with a 1:4 vCPU-to-memory ratio and is the default choice for new workloads. `nw-memory` provides a 1:8 ratio for in-memory caches and analytics. `nw-gpu` exposes 1, 4, or 8 accelerator cores for training and inference. `nw-compute` is a burstable family with a 1:2 ratio that bills only while the instance is actively running.\n\nInstance sizes are named `<family>.<size>`. `s` is 2 vCPU and 8 GB RAM, `m` is 4 and 16, `l` is 8 and 32, `xl` is 16 and 64. `nw-gpu.m` carries 4 accelerator cores with 32 GB of host memory, while `nw-gpu.l` carries 8 cores with 64 GB. Changing the family of a running instance requires a stop and start; changing only the size requires a restart.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "01_compute.md",
+        "section": "Instance families and sizing",
+        "doc_words": 402
+      }
+    },
+    {
+      "chunk_id": "compute::1",
+      "doc_id": "compute",
+      "title": "Compute Instances",
+      "category": "compute",
+      "text": "## Root volumes and metadata\nEvery instance boots from a block volume. The default root volume is 50 GB of `nw-block` storage and can be extended online to 16 TB. The root volume is destroyed together with the instance unless you detach it first, so production data must live on a separate volume. `nwctl describe instance` prints the instance ID, the family and size, the availability zone, the attached volume IDs, and the tags applied at launch. Tags such as `cost_center` and `project` are what cost allocation later groups by, and the same tagging rules are used when a workload is moved to a spot capacity pool.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "01_compute.md",
+        "section": "Root volumes and metadata",
+        "doc_words": 402
+      }
+    },
+    {
+      "chunk_id": "compute::2",
+      "doc_id": "compute",
+      "title": "Compute Instances",
+      "category": "compute",
+      "text": "## Autoscaling\nA `nw-autoscaler` group holds a minimum and a maximum instance count plus a target utilisation metric. The default target is 65% average CPU over a 5-minute window, with a minimum of 2 and a maximum of 20 instances. The scale-out cooldown is 120 seconds and the scale-in cooldown is 300 seconds, which keeps a bursty workload from flapping. Scaling groups are regional, and new instances are placed in subnets tagged `autoscaling: enabled`.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "01_compute.md",
+        "section": "Autoscaling",
+        "doc_words": 402
+      }
+    },
+    {
+      "chunk_id": "compute::3",
+      "doc_id": "compute",
+      "title": "Compute Instances",
+      "category": "compute",
+      "text": "## Spot capacity and interruption\nSpot instances are drawn from spare capacity at a 70% discount against the on-demand rate. Northwind issues a 2-minute interruption notice before reclaiming a spot instance, delivered as an `NW_SPOT_INTERRUPTION` event and written to the instance log group. Workloads that must survive interruption should checkpoint to the block volume at least every 60 seconds and should be spread over at least three availability zones. A spot instance cannot be the only member of a production load balancer target pool.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "01_compute.md",
+        "section": "Spot capacity and interruption",
+        "doc_words": 402
+      }
+    },
+    {
+      "chunk_id": "storage::0",
+      "doc_id": "storage",
+      "title": "Object Storage",
+      "category": "storage",
+      "text": "## Bucket structure and naming\nNorthwind Object Storage keeps data in buckets that belong to a single region. Bucket names are 3 to 63 characters long, use lowercase letters, digits and hyphens, and must be globally unique. Objects are addressed as `nw://<bucket>/<key>`, where the key is an opaque string of up to 1,024 bytes and may contain forward slashes. Each bucket is reached through a regional endpoint such as `https://obj.eu-west-1.northwind.example`.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "02_storage.md",
+        "section": "Bucket structure and naming",
+        "doc_words": 342
+      }
+    },
+    {
+      "chunk_id": "storage::1",
+      "doc_id": "storage",
+      "title": "Object Storage",
+      "category": "storage",
+      "text": "## Lifecycle policies and retention\nBuckets do not keep objects forever. A bucket with no explicit lifecycle policy applies the platform default, which retains objects for 90 days and then expires them. An expired object is unreadable and bills at zero, but recovery is possible only for 7 days afterwards through the version restore path. Lifecycle rules are evaluated daily at 02:00 UTC. A common starting rule transitions objects to `nw-cold` after 30 days and expires them at 90 days. Object locking adds write-once-read-many retention of up to 7 years for compliance workloads.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "02_storage.md",
+        "section": "Lifecycle policies and retention",
+        "doc_words": 342
+      }
+    },
+    {
+      "chunk_id": "storage::2",
+      "doc_id": "storage",
+      "title": "Object Storage",
+      "category": "storage",
+      "text": "## Storage classes and replication\nThree storage classes are available. `nw-standard` is hot storage with millisecond access and no minimum duration. `nw-cold` costs roughly 40% less and suits data read less than once a month. `nw-archive` is the cheapest tier, with a 12-hour restore latency and a 90-day minimum storage duration. Cross-region replication runs asynchronously and normally places a write in the replica within 5 minutes, which is the replication target the platform holds for every standard bucket. Bucket versioning keeps old generations for 30 days by default.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "02_storage.md",
+        "section": "Storage classes and replication",
+        "doc_words": 342
+      }
+    },
+    {
+      "chunk_id": "storage::3",
+      "doc_id": "storage",
+      "title": "Object Storage",
+      "category": "storage",
+      "text": "## Signed URLs and access\nPrivate objects are served through pre-signed URLs that embed an expiry timestamp. The maximum expiry for a signed URL is 7 days, and a request beyond that is rejected. A signed URL grants access to one object and one key; a URL signed for PUT also permits overwriting that object, so treat it as a temporary credential. Every use of a signed URL is recorded in the audit log with the requester identity and the object key, which is the same log reviewed during incident triage.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "02_storage.md",
+        "section": "Signed URLs and access",
+        "doc_words": 342
+      }
+    },
+    {
+      "chunk_id": "networking::0",
+      "doc_id": "networking",
+      "title": "Networking & VPC",
+      "category": "networking",
+      "text": "## VPC and subnets\nA VPC is scoped to one region and is created with a CIDR block; the recommended size is a /16, for example `10.40.0.0/16`, which leaves room for a /24 subnet in every availability zone. Northwind regions expose three availability zones. A VPC spans one or more subnets, and a subnet covers a single availability zone. Public subnets carry a public address range and route to an internet gateway, while private subnets route outbound through a NAT gateway. One NAT gateway per availability zone is recommended, and each NAT gateway sustains up to 20 Gbps.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "03_networking.md",
+        "section": "VPC and subnets",
+        "doc_words": 344
+      }
+    },
+    {
+      "chunk_id": "networking::1",
+      "doc_id": "networking",
+      "title": "Networking & VPC",
+      "category": "networking",
+      "text": "## Security groups\nSecurity groups are stateful, so the response to an allowed inbound connection is automatically allowed outbound. A new group applies a default deny to all inbound traffic and allows all outbound traffic by default, so an unmatched inbound connection is dropped. Each group accepts up to 100 rules, and a VPC may hold 500 groups. A rule may reference another security group as its source, which keeps policies readable. Cross-VPC peering requires explicit rules on both sides of the peering.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "03_networking.md",
+        "section": "Security groups",
+        "doc_words": 344
+      }
+    },
+    {
+      "chunk_id": "networking::2",
+      "doc_id": "networking",
+      "title": "Networking & VPC",
+      "category": "networking",
+      "text": "## Load balancers\nThree load balancer types are available. `nw-lb` is a layer 4 balancer for TCP and UDP, `nw-alb` is a layer 7 balancer that understands HTTP headers and paths, and `nw-nlb` is a network balancer tuned for very high connection counts. Health checks run every 10 seconds, a target is marked unhealthy after 3 consecutive failures, and the request timeout is 5 seconds. Registering a target takes effect within 10 seconds, and deregistration drains connections for 300 seconds before the target is removed.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "03_networking.md",
+        "section": "Load balancers",
+        "doc_words": 344
+      }
+    },
+    {
+      "chunk_id": "networking::3",
+      "doc_id": "networking",
+      "title": "Networking & VPC",
+      "category": "networking",
+      "text": "## Egress and private connectivity\nTraffic that leaves Northwind is billed. Internet egress costs $0.09 per GB, and the first 100 GB per month is included at no charge. Traffic between availability zones of the same region costs $0.01 per GB, while traffic inside a single availability zone is free. Storage and streaming endpoints are reachable from a VPC through a private endpoint, which keeps object access traffic off the metered egress path and off the public internet.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "03_networking.md",
+        "section": "Egress and private connectivity",
+        "doc_words": 344
+      }
+    },
+    {
+      "chunk_id": "identity::0",
+      "doc_id": "identity",
+      "title": "Identity & Access Management",
+      "category": "identity",
+      "text": "## Principals, groups, and roles\nNorthwind IAM manages three principal types. Users represent people and authenticate with a password plus a second factor. Roles represent workloads and are assumed by a user, a service account, or another role. A role carries a trust policy that lists which principals may assume it. Groups simplify user management: a group holds up to 500 members and can be granted the same policies as a user, and a user may belong to 10 groups at once.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "04_identity.md",
+        "section": "Principals, groups, and roles",
+        "doc_words": 369
+      }
+    },
+    {
+      "chunk_id": "identity::1",
+      "doc_id": "identity",
+      "title": "Identity & Access Management",
+      "category": "identity",
+      "text": "## Service accounts and short-lived credentials\nA service account is a non-human principal named `nw-sa-<name>` that owns a set of policies and is attached to a compute instance or a job. Instead of a static key, a service account receives an access token that expires after 30 minutes and is rotated automatically every 30 minutes. Callers request a token with `nwctl auth token --service-account <name>` and send it in an `Authorization: Bearer` header. Long-lived API keys are still issued for legacy integrations, but a user may hold at most 2 active keys, and the platform warns after 90 days of use. An assumed role session lasts 1 hour by default and can be extended to a maximum of 12 hours for long-running jobs.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "04_identity.md",
+        "section": "Service accounts and short-lived credentials",
+        "doc_words": 369
+      }
+    },
+    {
+      "chunk_id": "identity::2",
+      "doc_id": "identity",
+      "title": "Identity & Access Management",
+      "category": "identity",
+      "text": "## MFA and password policy\nMulti-factor authentication is enforced by default for all console logins. TOTP applications and hardware keys are both accepted, and a second factor is required on any new device. Passwords must be at least 14 characters and a maximum age of 90 days is applied. Administrators may not disable MFA for a user, only for service accounts, which never open a console session. A console session token expires after 12 hours of inactivity.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "04_identity.md",
+        "section": "MFA and password policy",
+        "doc_words": 369
+      }
+    },
+    {
+      "chunk_id": "identity::3",
+      "doc_id": "identity",
+      "title": "Identity & Access Management",
+      "category": "identity",
+      "text": "## Policy structure and permissions\nPermissions are written as JSON policy documents with an `Action` list such as `nw:bucket:Read`, a `Resource` such as `nw://acme-data/*`, and an `Effect` of `Allow` or `Deny`. `Deny` always wins. Wildcards are supported in both actions and resources, and the policy lint step flags any grant of `nw:*` on `*`. A principal's effective permissions are the union of its direct grants, its group grants, and the policies attached to the roles it may assume. Every permission change is written to the audit log.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "04_identity.md",
+        "section": "Policy structure and permissions",
+        "doc_words": 369
+      }
+    },
+    {
+      "chunk_id": "observability::0",
+      "doc_id": "observability",
+      "title": "Observability & Logging",
+      "category": "observability",
+      "text": "## Metrics\nNorthwind Observability collects metrics at three resolutions. Standard metrics are stored at 60-second resolution, fine-grained metrics at 10-second resolution, and high-resolution metrics at 1-second resolution. Standard metrics are free up to 10,000 active series per tenant; beyond that, ingestion is billed per 1,000 series per month. The endpoint `/metrics` on an instance exposes a Prometheus-format scrape target, and the recommended scrape interval is 15 seconds. A tenant can hold at most 5,000 dashboards and 20,000 alert rules.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "05_observability.md",
+        "section": "Metrics",
+        "doc_words": 373
+      }
+    },
+    {
+      "chunk_id": "observability::1",
+      "doc_id": "observability",
+      "title": "Observability & Logging",
+      "category": "observability",
+      "text": "## Logs and traces\nLogs are written to a named log group inside a region. The default retention is 90 days, and the first 30 days act as a hot tier with full-text search at no extra cost; searching older logs takes up to 60 seconds. Traces are sampled at 10% by default, and a request that returns a 5xx is always captured at 100%. Trace data is retained for 30 days. Correlation works by copying the `nw-trace-id` header into the log group, which is the recommended way to pivot from a slow endpoint to the underlying logs.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "05_observability.md",
+        "section": "Logs and traces",
+        "doc_words": 373
+      }
+    },
+    {
+      "chunk_id": "observability::2",
+      "doc_id": "observability",
+      "title": "Observability & Logging",
+      "category": "observability",
+      "text": "## Alerting\nAn alert rule evaluates a metric or log query on a fixed period. The default evaluation period is 5 minutes, that is a 5-minute window, and the default condition requires 2 consecutive periods to breach before the alert fires, which suppresses flapping. A breach that lasts 3 minutes therefore does not page a responder. Notification channels include email, a webhook, and Northwind Oncall for paging. A rule can be silenced for a fixed window, and a silenced rule still evaluates so that its history stays complete. Severity drives routing: `critical` alerts page, `warning` alerts send email.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "05_observability.md",
+        "section": "Alerting",
+        "doc_words": 373
+      }
+    },
+    {
+      "chunk_id": "observability::3",
+      "doc_id": "observability",
+      "title": "Observability & Logging",
+      "category": "observability",
+      "text": "## Retention, cost, and access\nMetrics are retained for 15 months. Logs are retained for 90 days unless a longer retention is configured on the log group, and traces are retained for 30 days. The observability service emits its own usage metrics, so watching the cost of telemetry is the same exercise as watching an application. Access to dashboards and log groups is granted with IAM roles, and the short-lived credentials described in the identity guide are used, so read access to a log group and write access to a billing account are both expressed as role policies.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "05_observability.md",
+        "section": "Retention, cost, and access",
+        "doc_words": 373
+      }
+    },
+    {
+      "chunk_id": "billing::0",
+      "doc_id": "billing",
+      "title": "Billing & Cost Management",
+      "category": "billing",
+      "text": "## Invoices and payment terms\nBilling is monthly and usage-based. The statement period runs from the 1st to the last day of the month, and the invoice is issued between the 1st and the 5th of the following month. Payment terms are net 30 days from the invoice date. An invoice lists charges by service, by region, and by tag, and tax is calculated per jurisdiction as a separate line. Usage continues to accrue while a payment is outstanding, and an account more than 60 days overdue has its resources suspended after a 7-day notice. Metered usage is reported with a 24-hour delay, so the final figure can move slightly after the invoice is issued.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "06_billing.md",
+        "section": "Invoices and payment terms",
+        "doc_words": 410
+      }
+    },
+    {
+      "chunk_id": "billing::1",
+      "doc_id": "billing",
+      "title": "Billing & Cost Management",
+      "category": "billing",
+      "text": "## Quotas\nA new tenant starts on the standard quota tier. The default limit is 50 vCPUs and 20 running compute instances per region. Object storage is limited to 10 TB per bucket and 50 TB per tenant, a tenant may create 1,000 streaming topics per cluster and 200 VPCs, and each API tenant is limited to 600 requests per minute. A quota increase is requested from support and is usually approved within one business day when the account has no sustained quota errors. When a limit is reached the API returns the error code `NW-4091` rather than queueing the request.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "06_billing.md",
+        "section": "Quotas",
+        "doc_words": 410
+      }
+    },
+    {
+      "chunk_id": "billing::2",
+      "doc_id": "billing",
+      "title": "Billing & Cost Management",
+      "category": "billing",
+      "text": "## Budget alerts and cost allocation\nA budget is defined for a tenant, a project, or a tag, with an optional monthly ceiling in dollars. Alerts fire at 50%, 80%, and 100% of the budget, and the 100% alert is a notification only; the platform never shuts down a workload automatically. Notifications go to the email addresses on the budget and to an optional webhook. Cost allocation depends on the `cost_center`, `project`, and `env` tags. Untagged spend is reported in a separate unallocated bucket rather than spread across projects, and a chargeback report for a month is available in CSV after the invoice is issued.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "06_billing.md",
+        "section": "Budget alerts and cost allocation",
+        "doc_words": 410
+      }
+    },
+    {
+      "chunk_id": "billing::3",
+      "doc_id": "billing",
+      "title": "Billing & Cost Management",
+      "category": "billing",
+      "text": "## Reservations and credits\nReserved capacity is sold in 1-year and 3-year terms. A 1-year reservation gives a discount of up to 30% against the on-demand rate, and a 3-year reservation gives up to 50%. A reservation covers one family and size in one region and applies automatically to matching on-demand instances. New tenants receive a $25 monthly credit for the first three months, and a promotional credit is applied before the outstanding balance is charged. Spending against a reservation appears on the same invoice line as on-demand usage.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "06_billing.md",
+        "section": "Reservations and credits",
+        "doc_words": 410
+      }
+    },
+    {
+      "chunk_id": "data_ingestion::0",
+      "doc_id": "data_ingestion",
+      "title": "Streaming Data Ingestion",
+      "category": "data_ingestion",
+      "text": "## Clusters, topics, and partitions\nNorthwind Streaming provides Kafka-compatible clusters. A cluster runs in one region with 3 brokers in the development tier and 9 brokers in the production tier. A topic is split into partitions, the default partition count is 3, and a topic may have at most 500 partitions. The default replication factor is 3 and the default retention is 7 days, after which records are deleted. A tenant may create 1,000 topics per cluster. A single partition sustains 100 MB/s and a cluster sustains 1 million records per second.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "07_data_ingestion.md",
+        "section": "Clusters, topics, and partitions",
+        "doc_words": 375
+      }
+    },
+    {
+      "chunk_id": "data_ingestion::1",
+      "doc_id": "data_ingestion",
+      "title": "Streaming Data Ingestion",
+      "category": "data_ingestion",
+      "text": "## Producers\nProducers send records to a topic, and the default settings favour durability over latency. `acks=all` is the default, so the broker waits for the full in-sync replica set to acknowledge a write. Idempotent production is enabled by default, which prevents duplicate records after a producer retry, and the producer identifier survives a reconnect for 5 minutes. The linger time is 5 ms, the batch size is 64 KB, and the compression codec is zstd. A producer may keep 5 in-flight requests per connection.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "07_data_ingestion.md",
+        "section": "Producers",
+        "doc_words": 375
+      }
+    },
+    {
+      "chunk_id": "data_ingestion::2",
+      "doc_id": "data_ingestion",
+      "title": "Streaming Data Ingestion",
+      "category": "data_ingestion",
+      "text": "## Consumers and consumer groups\nA consumer belongs to a group, and the partitions of a topic are divided between the members of that group. The session timeout is 45 seconds, and a member that fails to poll within the max poll interval (`max.poll.interval`) of 5 minutes is evicted and its partitions are reassigned. Offsets are committed automatically every 5 seconds, or manually with `enable.auto.commit=false`. A consumer that crashes between processing and committing reprocesses the batch, so the processing must be idempotent. The 5-minute max poll interval is the most common cause of a rebalance loop, and raising it is the first fix to try.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "07_data_ingestion.md",
+        "section": "Consumers and consumer groups",
+        "doc_words": 375
+      }
+    },
+    {
+      "chunk_id": "data_ingestion::3",
+      "doc_id": "data_ingestion",
+      "title": "Streaming Data Ingestion",
+      "category": "data_ingestion",
+      "text": "## Schema registry and exactly-once\nThe schema registry validates records against a schema stored under a subject, named `<topic>-value` for the record payload. Avro, JSON Schema and protobuf are supported. The default compatibility mode is `BACKWARD`, so a new schema may drop optional fields but must not add a required field or change the type of an existing field. Exactly-once delivery is achieved with an idempotent producer plus a transactional id, which commits the read offsets and the produced records atomically. A transactional producer is limited to 60,000 records per second per partition.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "07_data_ingestion.md",
+        "section": "Schema registry and exactly-once",
+        "doc_words": 375
+      }
+    },
+    {
+      "chunk_id": "backup_dr::0",
+      "doc_id": "backup_dr",
+      "title": "Backup & Disaster Recovery",
+      "category": "backup_dr",
+      "text": "## Snapshots and backup schedules\nEvery block volume supports point-in-time snapshots that are incremental. The daily snapshot runs at 02:00 UTC and is kept for 30 days, the weekly snapshot is kept for 12 weeks, and the monthly snapshot is kept for 7 years. A snapshot of a 500 GB volume transfers only the changed blocks. A volume may hold at most 1,000 snapshots, and the oldest automatic snapshot is deleted first when that limit is reached. A snapshot of the root volume of a running instance is crash-consistent, and an application-level checkpoint is required for a clean application state.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "08_backup_dr.md",
+        "section": "Snapshots and backup schedules",
+        "doc_words": 379
+      }
+    },
+    {
+      "chunk_id": "backup_dr::1",
+      "doc_id": "backup_dr",
+      "title": "Backup & Disaster Recovery",
+      "category": "backup_dr",
+      "text": "## Recovery objectives\nThe platform publishes two recovery objectives. The RPO for a streaming topic is 5 minutes, and the RPO for a block volume is 15 minutes. The RTO for a regional failover is 30 minutes, while the RTO for restoring a single volume from a snapshot is 60 minutes. Backup retention is set so that a restore is always possible inside the RTO, which makes the daily snapshot the minimum restore point and the replication target the maximum. A restore runs in the target region and the source volume is preserved for 7 days afterwards so that the restore can be rolled back.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "08_backup_dr.md",
+        "section": "Recovery objectives",
+        "doc_words": 379
+      }
+    },
+    {
+      "chunk_id": "backup_dr::2",
+      "doc_id": "backup_dr",
+      "title": "Backup & Disaster Recovery",
+      "category": "backup_dr",
+      "text": "## Cross-region replication\nCross-region replication copies snapshots and streaming topics to a paired region asynchronously. The replication lag target is 5 minutes for streaming topics and 15 minutes for volumes, and the state of each relationship is visible in the console and through `nwctl replication status`. A tenant may have 10 active cross-region relationships. A relationship can be paused, which holds the source in place, or suspended, which leaves the replica behind. The replica region must sit on the same continent.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "08_backup_dr.md",
+        "section": "Cross-region replication",
+        "doc_words": 379
+      }
+    },
+    {
+      "chunk_id": "backup_dr::3",
+      "doc_id": "backup_dr",
+      "title": "Backup & Disaster Recovery",
+      "category": "backup_dr",
+      "text": "## Failover\nRegional failover is a manual promotion of the standby resources, not an automatic DNS switch. A failover promotion takes 10 minutes to run and completes inside the 30-minute RTO, validation traffic included. `nw-dns` health checks run every 30 seconds and route traffic after 3 consecutive failures, with a 60-second record TTL. Before promoting, confirm that the replica lag is under 5 minutes and take a manual snapshot of the standby. Failback is a second promotion in the opposite direction, it is not automated, and it should be scheduled outside business hours.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "08_backup_dr.md",
+        "section": "Failover",
+        "doc_words": 379
+      }
+    },
+    {
+      "chunk_id": "api_reference::0",
+      "doc_id": "api_reference",
+      "title": "API Reference",
+      "category": "api_reference",
+      "text": "## Base URL, versioning, and content type\nThe Northwind API is a REST API. The base URL is `https://api.northwind.example/v1`, and the major version sits in the path, so `/v1` and `/v2` can run side by side. Request and response bodies are JSON, and the `Content-Type: application/json` header is required on every request that carries a body. Resource names are plural and hyphenated, such as `/v1/object-buckets` and `/v1/compute-instances`. Field names are `snake_case`, and timestamps are UTC in RFC 3339 format, for example `2026-03-14T09:15:00Z`.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "09_api_reference.md",
+        "section": "Base URL, versioning, and content type",
+        "doc_words": 465
+      }
+    },
+    {
+      "chunk_id": "api_reference::1",
+      "doc_id": "api_reference",
+      "title": "API Reference",
+      "category": "api_reference",
+      "text": "## Authentication\nTwo authentication methods are supported. Interactive clients send `Authorization: Bearer <token>` with a token from `nwctl auth token`. Machine clients sign the request with `X-Northwind-Key` and `X-Northwind-Signature`, where the signature is an HMAC-SHA256 of the method, path and body using the key secret, and the timestamp travels in `X-Northwind-Timestamp`. A request whose timestamp is more than 5 minutes away from the server clock is rejected with `NW-2201`. Static API keys are accepted for legacy integrations and are limited to 2 active keys per user.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "09_api_reference.md",
+        "section": "Authentication",
+        "doc_words": 465
+      }
+    },
+    {
+      "chunk_id": "api_reference::2",
+      "doc_id": "api_reference",
+      "title": "API Reference",
+      "category": "api_reference",
+      "text": "## Pagination\nList endpoints are cursor-paginated. Send `limit` to choose the page size, and the default is 25 with a maximum of 200. The response contains a `data` array plus a `next_cursor` field, and `next_cursor` is `null` on the final page. A `cursor` query parameter continues from a previous page, and a cursor stays valid for 15 minutes. Cursors are opaque strings and must not be parsed. Filtering uses query parameters such as `region=` and `status=`, and several filters are combined with AND.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "09_api_reference.md",
+        "section": "Pagination",
+        "doc_words": 465
+      }
+    },
+    {
+      "chunk_id": "api_reference::3",
+      "doc_id": "api_reference",
+      "title": "API Reference",
+      "category": "api_reference",
+      "text": "## Errors, rate limits, and idempotency\nAn error response is a JSON object with an `error` object that holds `code`, `message` and `request_id`. The HTTP status is 400 for a malformed request, 401 for an invalid or expired token, 403 for an insufficient permission, 404 for a missing resource, 409 for a conflict such as a name already in use, 422 for a schema validation failure, 429 for a rate limit, and 5xx for a server fault. Every response carries an `X-Request-Id` header that matches the `request_id` in an error body, and that identifier is the first thing to quote in a support ticket.\n\nThe rate limit is 600 requests per minute per tenant, evaluated over a sliding one-minute window. Responses include `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset`, and a 429 response also includes a `Retry-After` header in seconds. A request that would exceed the limit is rejected rather than queued, and the retry guidance lives in the troubleshooting runbook.\n\nA POST request that creates a resource accepts an `Idempotency-Key` header. The key must be unique per logical operation and is stored for 24 hours. A repeat of the same key inside that window returns the original response with the same status code and does not create a second resource. Keys are scoped to the tenant.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "09_api_reference.md",
+        "section": "Errors, rate limits, and idempotency",
+        "doc_words": 465
+      }
+    },
+    {
+      "chunk_id": "troubleshooting::0",
+      "doc_id": "troubleshooting",
+      "title": "Troubleshooting Runbook",
+      "category": "troubleshooting",
+      "text": "## Diagnostic commands\n`nwctl doctor` is the first command to run for any connectivity or configuration problem. It checks the local configuration file, the certificate, the token expiry, the DNS resolution of the endpoint, and the reachability of the regional API, and it prints a pass or fail line for every check. `nwctl logs tail --group <name> --since 15m` streams the last minutes of a log group, and `nwctl describe <resource>` shows the current state of a single resource. All three commands support `--output json`, and that output attaches directly to a support ticket. The diagnostics are read-only; nothing in `nwctl doctor` changes a deployed resource.",
+      "chunk_index": 0,
+      "metadata": {
+        "source_file": "10_troubleshooting.md",
+        "section": "Diagnostic commands",
+        "doc_words": 443
+      }
+    },
+    {
+      "chunk_id": "troubleshooting::1",
+      "doc_id": "troubleshooting",
+      "title": "Troubleshooting Runbook",
+      "category": "troubleshooting",
+      "text": "## Common error codes\n`NW-2201` means the request carried an invalid or expired credential, and the fix is to refresh the token or to correct the HMAC timestamp. `NW-4032` means the principal lacks the required permission, and the response names the missing action, such as `nw:bucket:Read`. `NW-4291` means the tenant exceeded the rate limit. `NW-4091` means a quota was reached, and the response names the quota. `NW-5021` is an upstream service fault on the Northwind side, and the response carries an `X-Request-Id`. A 502 or a 503 response is safe to retry, while a 400 or a 422 is not, because the request itself has to change.",
+      "chunk_index": 1,
+      "metadata": {
+        "source_file": "10_troubleshooting.md",
+        "section": "Common error codes",
+        "doc_words": 443
+      }
+    },
+    {
+      "chunk_id": "troubleshooting::2",
+      "doc_id": "troubleshooting",
+      "title": "Troubleshooting Runbook",
+      "category": "troubleshooting",
+      "text": "## Retry and recovery\nRetry a 429, a 502 or a 503 with exponential backoff and full jitter, starting at 1 second and doubling, and make no more than 3 attempts. A 429 also carries `Retry-After`, which overrides the computed delay. Do not retry a 409 without reconciling the resource state first, because the original request may have partially succeeded. A client that must not lose work sends an `Idempotency-Key` on every POST, and the API reference states how long a key is remembered. The service status page at `status.northwind.example` shows live incidents, and a spike of `NW-5021` errors that is not listed there is usually a customer-side firewall or DNS issue.",
+      "chunk_index": 2,
+      "metadata": {
+        "source_file": "10_troubleshooting.md",
+        "section": "Retry and recovery",
+        "doc_words": 443
+      }
+    },
+    {
+      "chunk_id": "troubleshooting::3",
+      "doc_id": "troubleshooting",
+      "title": "Troubleshooting Runbook",
+      "category": "troubleshooting",
+      "text": "## Escalation and severity\nFour severities are available. `P1` is a full outage with no workaround, `P2` is a major degradation or a partial outage, `P3` is a limited feature failure that has a workaround, and `P4` is a general question or a cosmetic defect. A `P1` ticket receives a first human response within 15 minutes, a `P2` within 1 hour, a `P3` within 4 hours, and a `P4` within 1 business day. Open the ticket from the console, attach the `nwctl doctor --output json` output and the `X-Request-Id`, and include the region, the affected resource ID and the first timestamp of the error. Escalate a `P2` to `P1` in the same thread when the workaround stops working.",
+      "chunk_index": 3,
+      "metadata": {
+        "source_file": "10_troubleshooting.md",
+        "section": "Escalation and severity",
+        "doc_words": 443
+      }
+    }
+  ]
+}

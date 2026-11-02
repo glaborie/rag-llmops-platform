@@ -1,0 +1,10 @@
+# Core runtime — everything the platform needs to boot, serve and self-test.
+pydantic>=2.7
+pydantic-settings>=2.2
+pyyaml>=6.0
+numpy>=1.24
+requests>=2.31
+fastapi>=0.110
+uvicorn>=0.29
+prometheus-client>=0.20
+qdrant-client>=1.9

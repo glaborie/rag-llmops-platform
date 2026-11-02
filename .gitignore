@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Local state (regenerate with `python -m ragllmops.cli doctor`)
+data/cache/
+data/runs/
+data/reports/
+data/registry/
+data/features/online_store.json
+data/logs/*.db
+mlruns/
+*.db
+*.sqlite3
+
+# Secrets
+.env
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.idea/
+.vscode/

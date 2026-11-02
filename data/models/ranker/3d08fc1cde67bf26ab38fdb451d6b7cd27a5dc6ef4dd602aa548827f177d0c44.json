@@ -1,0 +1,81 @@
+{
+  "metadata": {
+    "baseline_metrics": {
+      "accuracy": 0.0,
+      "auc": 0.0,
+      "examples": 2.0,
+      "pairs": 0.0,
+      "pairwise_accuracy": 0.0
+    },
+    "created_at": "2026-10-20T14:35:38.757218+00:00",
+    "examples": 11,
+    "feature_names": [
+      "bm25_score",
+      "dense_score",
+      "term_overlap",
+      "doc_avg_relevance",
+      "doc_retrieval_count",
+      "candidate_position",
+      "chunk_length"
+    ],
+    "feature_schema_version": "ranker-features-v1",
+    "metrics": {
+      "train": {
+        "accuracy": 1.0,
+        "auc": 1.0,
+        "examples": 9.0,
+        "pairs": 0.0,
+        "pairwise_accuracy": 0.0
+      },
+      "validation": {
+        "accuracy": 0.5,
+        "auc": 0.0,
+        "examples": 2.0,
+        "pairs": 0.0,
+        "pairwise_accuracy": 0.0
+      }
+    },
+    "training_data_hash": "2376cf9c62c07b28551362c1e49044a0a4caf9771424d12b6e1da3c458f11b97"
+  },
+  "model": {
+    "bias": 2.13171056,
+    "feature_names": [
+      "bm25_score",
+      "dense_score",
+      "term_overlap",
+      "doc_avg_relevance",
+      "doc_retrieval_count",
+      "candidate_position",
+      "chunk_length"
+    ],
+    "feature_schema_version": "ranker-features-v1",
+    "means": [
+      5.85099197,
+      0.18081494,
+      0.72267844,
+      0.0,
+      0.0,
+      3.33333333,
+      546.33333333
+    ],
+    "scales": [
+      2.6291082,
+      0.13536905,
+      0.16159813,
+      1.0,
+      1.0,
+      1.88561808,
+      77.33620684
+    ],
+    "version": "logreg-v1",
+    "weights": [
+      -1.04264771,
+      0.31577644,
+      0.75484164,
+      0.0,
+      0.0,
+      3.3271019,
+      0.6746687
+    ]
+  }
+}

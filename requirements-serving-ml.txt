@@ -1,0 +1,14 @@
+# The ML backends the *serving* stack needs when it runs against the full
+# Docker stack:
+#
+#   mlflow   -> the model registry (RAG_REGISTRY_BACKEND=mlflow)
+#   psycopg  -> the Postgres request log (RAG_LOG_STORE_BACKEND=postgres)
+#
+# This file is deliberately much smaller than requirements-ml.txt: it pulls in
+# no model weights (no torch), so the API image stays small. The embedder and
+# the cross-encoder reranker keep their dependency-free fallbacks.
+#
+# The MLflow client is pinned to the same version as the MLflow server image
+# in docker-compose.yml (2.16.x), so the two cannot drift apart.
+mlflow>=2.16,<2.17
+psycopg[binary]>=3.1
